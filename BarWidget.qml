@@ -13,11 +13,11 @@
 //   * it answers, the client starts. It does not, a panel under the icon says
 //     so and shows the exact command it would run;
 //   * "Install" opens Omarchy's own floating terminal on `install-client.sh`,
-//     which ships with this plugin: `podshl-bin` from the AUR when it is
-//     there, and until then the same PKGBUILD, from `package/`, built with
-//     makepkg. The terminal is not decoration: both end in `sudo pacman`, and a
-//     password prompt needs somewhere to be typed. When it succeeds, the
-//     client starts.
+//     which ships with this plugin: it builds `podshl-bin` from the PKGBUILD
+//     in `package/` with makepkg. It no longer asks the AUR first — that
+//     package is not there and cannot be while registration is paused. The
+//     terminal is not decoration: it ends in `sudo pacman`, and a password
+//     prompt needs somewhere to be typed. When it succeeds, the client starts.
 //
 // Nothing else happens here. The plugin runs unsandboxed inside the shell and
 // belongs to a product whose argument is bounded effect, so it reads no files,
@@ -195,8 +195,9 @@ BarWidget {
           wrapMode: Text.WordWrap
           text: "This icon only starts the PODSHL client, and the client is not on this machine yet. "
             + "Install it? A terminal opens and runs the script below, which came with this plugin: "
-            + "the package podshl-bin from the AUR, or, until it is published there, the same PKGBUILD "
-            + "built here. The package manager asks for your password, and PODSHL starts when it is done."
+            + "it builds the package podshl-bin from the PKGBUILD shipped beside it, checking the "
+            + "download against the sums in that file. The package manager asks for your password, "
+            + "and PODSHL starts when it is done."
           color: Color.popups.text
           font.family: Style.font.family
           font.pixelSize: Style.font.body
