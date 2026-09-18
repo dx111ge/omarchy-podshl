@@ -5,11 +5,13 @@
 // by design (manual, "Shell Plugins"). So the package cannot arrive with the
 // plugin. It arrives with the first click instead:
 //
-//   * a click asks the login shell whether `podshl-client` is on the PATH. It
-//     asks at the click and not at shell start, because an answer from startup
-//     goes stale the moment somebody installs the client another way;
-//   * found, the client starts. Missing, a panel under the icon says so and
-//     shows the exact command it would run;
+//   * a click asks the client, in a login shell, to name itself. Not whether
+//     the name is on the PATH: a name resolves to stale shims and broken
+//     symlinks, and one of those made this icon do nothing at all. It asks at
+//     the click and not at shell start, because an answer from startup goes
+//     stale the moment somebody installs the client another way;
+//   * it answers, the client starts. It does not, a panel under the icon says
+//     so and shows the exact command it would run;
 //   * "Install" opens Omarchy's own floating terminal on `install-client.sh`,
 //     which ships with this plugin: `podshl-bin` from the AUR when it is
 //     there, and until then the same PKGBUILD, from `package/`, built with
@@ -91,7 +93,21 @@ BarWidget {
   Process {
     id: probe
     // A login shell, because that is the PATH bar.run() launches with.
-    command: ["bash", "-lc", "command -v " + root.client]
+    //
+    // **It asks the client to name itself, not the shell to find the name.**
+    // `command -v` answers about a *name*, and a name resolves to plenty of
+    // things that are not a working client. On a real Omarchy machine on
+    // 2026-09-18 it resolved to a dead `mise` shim left behind by an
+    // uninstalled tool: `command -v` exited 0, so this launched instead of
+    // offering to install, and `mise` then failed into a terminal nobody sees
+    // — *and exited 0 while doing it*. The person clicked the icon and got
+    // nothing at all: no window, no panel, no message. That is the failure
+    // this plugin exists to avoid, not one it may cause.
+    //
+    // So the test is the one thing a working client can always do and a stale
+    // symlink cannot: say its own name (`L8`). The exit code is not enough,
+    // because `mise` returns 0 on its own error; the output has to match.
+    command: ["bash", "-lc", root.client + " --version 2>/dev/null | grep -q '^" + root.client + " '"]
     onExited: function(exitCode) {
       if (exitCode === 0) {
         root.launch()
